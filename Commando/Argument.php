@@ -37,6 +37,7 @@
 		public function bindPossibleArgumentValues(array $possibleArgumentValues) {
 			foreach($possibleArgumentValues as $index => $possibleValue) {
 				if(isset($this->values[$index])) {
+					echo $possibleValue;
 					$this->values[$index]->set($possibleValue);
 				}
 			}
@@ -44,9 +45,13 @@
 		}
 
 		public function validate() {
+			$invalidValues = array();
 			foreach($this->values as $Value) {
-
+				if($Value->isRequired() && $Value->hasValue() === false) {
+					throw new InvalidArgumentException('Invalid argument for '.$this->getTitle(true).': '.$Value->getValue());
+				}
 			}
+			return $invalidValues;
 		}
 
 		private function hasMasterValue() {
@@ -65,7 +70,7 @@
 						if(count($this->values) == 1 && $this->hasMasterValue()) {
 							throw new InvalidArgumentException('Argument '.$this->getTitle(true).' already has a master value assigned.');
 						}
-						$this->values[spl_object_hash($Value)] = $Value;
+						$this->values[] = $Value;
 					}
 				}
 			} else {
@@ -73,7 +78,7 @@
 					throw new InvalidArgumentException('Argument '.$this->getTitle(true).' already has a master value assigned.');
 				}
 				if($values instanceof Commando_Argument_Value) {
-					$this->values[spl_object_hash($values)] = $values;
+					$this->values[] = $values;
 				}
 			}
 			return $this;

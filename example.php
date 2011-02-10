@@ -14,9 +14,11 @@
 			Commando_Argument::factory('directory', 'the directory to parse', true)->addValue(
 				Commando_Argument_Value::factory(true, true)
 			),
-			Commando_Argument::factory('filter', 'a list of extensions to filter')->addValue(
-				Commando_Argument_Value::factory(true, '(php)')
-			)
+			Commando_Argument::factory('filter', 'a list of extensions to filter')->addValue(array(
+				Commando_Argument_Value::factory(true, false, '(php)'),
+				Commando_Argument_Value::factory(true, false, '(php)'),
+				Commando_Argument_Value::factory(false, false, '(php)')
+			))
 		))
 		->validate($argv)
 		->execute();

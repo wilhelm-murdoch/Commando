@@ -17,6 +17,10 @@
 			return new self($isRequired, $isMaster, $valuePattern);
 		}
 
+		public function isRequired() {
+			return (bool) $this->isRequired;
+		}
+
 		public function hasValue() {
 			return (bool) $this->value;
 		}
@@ -31,6 +35,10 @@
 
 		public function set($value) {
 			$this->value = $value;
+		}
+
+		public function getValue() {
+			return $this->value;
 		}
 
 		public function  __toString() {

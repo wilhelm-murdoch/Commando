@@ -87,7 +87,14 @@
 			foreach(self::$arguments as $Argument) {
 				$Argument->notify();
 			}
-			return is_null($callback) === false ? call_user_func(self::$callback, self::$instance) : null;
+
+			if(is_null($callback) === false) {
+				if(is_callable($callback) === false) {
+					throw new InvalidArgumentException('The specified callback can not be executed.');
+				}
+
+				return call_user_func($callback, self::$instance);
+			}
 		}
 
 		static public function  __toString() {
