@@ -1,6 +1,6 @@
 <?php
 
-	class Commando_Subject implements SplSubject {
+	abstract class Commando_Subject implements SplSubject {
 		private $observers;
 		public function __construct() {}
 		public function attach(SplObserver $Observer) {
