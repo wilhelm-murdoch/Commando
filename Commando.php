@@ -1,21 +1,43 @@
 <?php
 
 	class Commando {
-		const __ARGUMENT_PATTERN_SWITCH = '-{2}';
-		const __ARGUMENT_PATTERN_TITLE = '[[:alnum:]-_]+';
-		const __ARGUMENT_HELP_SWITCH = '?';
-
 		static private $singleton = null;
 		static private $arguments = array();
-		static private $callback = null;
+		static private $config = array (
+			'argument.pattern.help'   => '\?',
+			'argument.pattern.switch' => '-{2}',
+			'argument.switch.plain'   => '--',
+			'argument.help.plain'     => '?',
+			'argument.pattern.title'  => '[[:alnum:]-_]+',
+			'commando.strict'         => true
+		);
 
-		static public function singleton($callback = null) {
+		static public function singleton(array $config = array()) {
 			if((self::$singleton instanceof self) === false) {
-				if(is_null($callback)) {
-					throw new InvalidArgumentException('a callback must be bound to the command client');
-				}
 				self::$singleton = new self;
-				self::$callback = $callback;
+				self::$config = array_merge(self::$config, $config);
+			}
+			return self::$singleton;
+		}
+
+		static public function config($path) {
+			if(isset(self::$config[$path]) === false) {
+				throw new InvalidArgumentException("The following configuration option can not be found: {$path}");
+			}
+			return self::$config[$path];
+		}
+
+		static public function addArgument($arguments) {
+			if(is_array($arguments)) {
+				foreach($arguments as $Argument) {
+					if($Argument instanceof Commando_Argument) {
+						self::$arguments[$Argument->getTitle()] = $Argument;
+					}
+				}
+			} else {
+				if($arguments instanceof Commando_Argument) {
+					self::$arguments[$arguments->getTitle()] = $arguments;
+				}
 			}
 			return self::$singleton;
 		}
@@ -24,108 +46,93 @@
 			return (PHP_SAPI === 'cli');
 		}
 
-		static private function isArgument($argument) {
-			return (bool) preg_match('#^'.self::__ARGUMENT_PATTERN_SWITCH.self::__ARGUMENT_PATTERN_TITLE.'$#i', $argument);
-		}
-
-		static private function stripArgumentSwitch($argument) {
-			return strtolower(preg_replace('#^'.self::__ARGUMENT_PATTERN_SWITCH.'#i', '', $argument));
-		}
-
-		static public function getArgumentValue($argument) {
-			return isset(self::$arguments[$argument]) ? self::$arguments[$argument]->getValue() : null;
-		}
-
-		static public function addArgument($arguments) {
-			if(is_array($arguments)) {
-				foreach($arguments as $Argument) {
-					if($Argument instanceof Argument) {
-						self::$arguments[$Argument->title] = $Argument;
-					}
-				}
-			} else {
-				if($argument instanceof Argument) {
-					self::$arguments[$Argument->title] = $Argument;
-				}
-			}
-			return self::$singleton;
-		}
-
 		static public function showHelp() {
-			echo 'this is the help section';
+			echo 'help support';
 			return self::$singleton;
 		}
 
-		static public function validate(array $arguments) {
-			if($arguments[0] == $_SERVER['PHP_SELF']) {
-				array_shift($arguments);
+		static public function validate(array $argv) {
+			if($argv[0] == $_SERVER['PHP_SELF']) {
+				array_shift($argv);
 			}
 
-			if($arguments[0] == self::__ARGUMENT_HELP_SWITCH) {
+			if(preg_match('#^'.self::config('argument.pattern.help').'$#i', $argv[0])) {
 				return self::showHelp();
 			}
 
-			$knownArguments  = array();
-			$unkownArguments = array();
-			foreach($arguments as $argument) {
-				if(self::isArgument($argument)) {
-					$argumentTitle = self::stripArgumentSwitch($argument);
-					if(isset(self::$arguments[$argumentTitle])) {
-						$knownArguments[] = $argumentTitle;
-					} else {
-						$unknownArguments[] = $argument;
-					}
+			$knownAndUnknownArguments = self::getKnownAndUnknownArguments($argv);
+
+			if($knownAndUnknownArguments['unknown']) {
+				throw new InvalidArgumentException('The following unknown arguments have been found: '.implode(', ', $knownAndUnknownArguments['unknown']));
+			}
+
+			if($missingArguments = self::getMissingRequiredArguments($argv, $knownAndUnknownArguments['known'])) {
+				throw new InvalidArgumentException('Required values for the following arguments are missing: '.implode(', ', $missingArguments));
+			}
+
+			$possibleArgumentValues = self::getPossibleArgumentValues($argv);
+
+			try {
+				foreach($possibleArgumentValues as $argument => $values) {
+					self::$arguments[$argument]->bindPossibleArgumentValues($values)->validate();
 				}
-			}
-
-			if($unknownArguments) {
-				throw new InvalidArgumentException('Unknown arguments detected');
-			}
-
-			// are all required arguments present?
-			$missingArguments = array();
-			foreach(self::$arguments as $Argument) {
-				if($Argument->isRequired() && in_array($Argument->title, $knownArguments) === false) {
-					$missingArguments[] = $Argument->title;
-				}
-			}
-
-			if($missingArguments) {
-				throw new InvalidArgumentException('missing required argument: '.implode(', ', $missingArguments));
-			}
-
-			// do all arguments with required values have them?
-			$missingValues = array();
-			foreach($arguments as $index => $argument) {
-				if(self::isArgument($argument)) {
-					$argumentTitle = self::stripArgumentSwitch($argument);
-					if(isset(self::$arguments[$argumentTitle])) {
-						if(self::$arguments[$argumentTitle]->isValueRequired()) {
-							if(isset($arguments[$index++]) === false) {
-								$missingValues[] = $argumentTitle;
-							} else {
-								self::$arguments[$argumentTitle]->setValue($arguments[$index++]);
-							}
-						}
-					}
-				}
-			}
-
-			if($missingValues) {
-				throw new InvalidArgumentException('missing required values for: '.implode(', ', $missingValues));
+			} catch(Exception $Exception) {
+				throw $Exception;
 			}
 
 			return self::$singleton;
 		}
 
-		static public function execute() {
+		static public function execute($callback = null) {
 			foreach(self::$arguments as $Argument) {
 				$Argument->notify();
 			}
-			return call_user_func(self::$callback, self::$instance);
+			return is_null($callback) === false ? call_user_func(self::$callback, self::$instance) : null;
 		}
 
 		static public function  __toString() {
 			return implode(' ', $_SERVER['argv']);
+		}
+
+		static private function getPossibleArgumentValues(array $argv) {
+			$possibleArgumentValues = array();
+			foreach(self::$arguments as $Argument) {
+				$startingIndex = array_search($Argument->getTitle(true), $argv) + 1;
+				for($i = $startingIndex; $i < count($argv); $i++) {
+					if(Commando_Argument::isValid($argv[$i])) {
+						break;
+					}
+					$possibleArgumentValues[$Argument->getTitle()][] = $argv[$i];
+				}
+			}
+			return $possibleArgumentValues;
+		}
+
+		static private function getKnownAndUnknownArguments(array $argv) {
+			$knownAndUnknownArguments = array(
+				'known'   => array(),
+				'unknown' => array()
+			);
+			foreach($argv as $argument) {
+				if(Commando_Argument::isValid($argument)) {
+					$argumentTitle = Commando_Argument::stripSwitch($argument);
+					if(isset(self::$arguments[$argumentTitle]) === false && self::config('commando.strict')) {
+						$knownAndUnknownArguments['unknown'][] = $argument;
+					} else {
+						$knownAndUnknownArguments['known'][] = $argumentTitle;
+					}
+				}
+			}
+			return $knownAndUnknownArguments;
+		}
+
+		static private function getMissingRequiredArguments(array $argv, array $knownArguments) {
+			$missingRequiredArguments = array();
+			foreach(self::$arguments as $Argument) {
+				if($Argument->isRequired() && in_array($Argument->getTitle(), $knownArguments) === false) {
+					$missingRequiredArguments[] = $Argument->getTitle();
+				}
+			}
+			return $missingRequiredArguments;
 		}
 	}

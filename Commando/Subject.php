@@ -2,7 +2,9 @@
 
 	abstract class Commando_Subject implements SplSubject {
 		private $observers;
-		public function __construct() {}
+		public function __construct() {
+			$this->observers = array();
+		}
 		public function attach(SplObserver $Observer) {
 			$this->observers[spl_object_hash($Observer)] = $Observer;
 			return $this;

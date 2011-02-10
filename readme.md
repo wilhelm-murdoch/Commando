@@ -1,0 +1,1 @@
+Documentation is on its way. Just be warned that the first few versions of this library will be highly unstable.

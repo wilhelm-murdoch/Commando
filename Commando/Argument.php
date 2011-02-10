@@ -2,35 +2,84 @@
 
 	class Commando_Argument extends Commando_Subject {
 		private $isRequired;
-		private $isValueRequired;
-		public $title;
-		private $value;
-		private $valuePattern;
-		static public function factory($title, $isRequired = false, $isValueRequired = false, $valuePattern = null) {
-			return new self($title, $isRequired, $isValueRequired, $valuePattern);
-		}
-		public function __construct($title, $isRequired = false, $isValueRequired = false, $valuePattern = null) {
+		private $title;
+		private $description;
+		private $values;
+
+		public function __construct($title, $description, $isRequired = false) {
 			parent::__construct();
-			$this->observers       = array();
-			$this->title           = strtolower($title);
-			$this->valuePattern    = $valuePattern;
-			$this->isRequired      = $isRequired;
-			$this->isValueRequired = $isValueRequired;
-			$this->value           = null;
+			$this->title       = strtolower($title);
+			$this->description = $description;
+			$this->isRequired  = $isRequired;
+			$this->values      = array();
 		}
+
+		static public function factory($title, $description, $isRequired = false) {
+			return new self($title, $description, $isRequired);
+		}
+
+		public function getTitle($asSwitch = false) {
+			return $asSwitch ? Commando::config('argument.switch.plain').$this->title : $this->title;
+		}
+
 		public function isRequired() {
 			return (bool) $this->isRequired;
 		}
-		public function isValueRequired() {
-			return (bool) $this->isValueRequired;
+
+		static public function stripSwitch($argumentTitle) {
+			return strtolower(preg_replace('#^'.Commando::config('argument.pattern.switch').'#i', '', $argumentTitle));
 		}
-		public function setValue($value) {
-			if(is_null($this->valuePattern) === false && preg_match("#^{$this->valuePattern}$#i", $value) == false) {
-				throw new InvalidArgumentException('Invalid parameter value');
+
+		static public function isValid($argumentTitle) {
+			return (bool) preg_match('#^'.Commando::config('argument.pattern.switch').Commando::config('argument.pattern.title').'$#i', $argumentTitle);
+		}
+
+		public function bindPossibleArgumentValues(array $possibleArgumentValues) {
+			foreach($possibleArgumentValues as $index => $possibleValue) {
+				if(isset($this->values[$index])) {
+					$this->values[$index]->set($possibleValue);
+				}
 			}
-			$this->value = $value;
+			return $this;
 		}
-		public function getValue() {
-			return $this->value;
+
+		public function validate() {
+			foreach($this->values as $Value) {
+
+			}
+		}
+
+		private function hasMasterValue() {
+			foreach($this->values as $Value) {
+				if($Value->isMaster()) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+		public function addValue($values) {
+			if(is_array($values)) {
+				foreach($values as $Value) {
+					if($Value instanceof Commando_Argument_Value) {
+						if(count($this->values) == 1 && $this->hasMasterValue()) {
+							throw new InvalidArgumentException('Argument '.$this->getTitle(true).' already has a master value assigned.');
+						}
+						$this->values[spl_object_hash($Value)] = $Value;
+					}
+				}
+			} else {
+				if(count($this->values) == 1 && $this->hasMasterValue()) {
+					throw new InvalidArgumentException('Argument '.$this->getTitle(true).' already has a master value assigned.');
+				}
+				if($values instanceof Commando_Argument_Value) {
+					$this->values[spl_object_hash($values)] = $values;
+				}
+			}
+			return $this;
+		}
+
+		public function  __toString() {
+			return $this->getTitle(true);
 		}
 	}
