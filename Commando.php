@@ -195,7 +195,7 @@
 			}
 
 			if($missingArguments = self::getMissingRequiredArguments($argv, $knownAndUnknownArguments['known'])) {
-				throw new InvalidArgumentException('Required values for the following arguments are missing: '.implode(', ', $missingArguments));
+				throw new InvalidArgumentException('The following required arguments are missing: '.implode(', ', $missingArguments));
 			}
 
 			$possibleArgumentValues = self::getPossibleArgumentValues($argv);
@@ -209,6 +209,25 @@
 			}
 
 			return self::$singleton;
+		}
+
+		/**
+		 * This will return all values associated with the specified argument title. First, it must ensure the desired
+		 * argument exists. If not, it will throw an exception. It will then iterate through a known argument's bound
+		 * values and return them as an array.
+		 *
+		 * @param String $argumentTitle Title of the desired argument.
+		 * @author Daniel Wilhelm II Murdoch <wilhelm.murdoch@gmail.com>
+		 * @access Public
+		 * @return Array
+		 * @throws InvalidArgumentException
+		 * @uses Commando_Argument::getValues()
+		 */
+		public function getArg($argumentTitle) {
+			if(isset(self::$arguments[$argumentTitle]) === false) {
+				throw new InvalidArgumentException("Argument could not be found: {$argumentTitle}");
+			}
+			return self::$arguments[$argumentTitle]->getValues();
 		}
 
 		/**
@@ -243,7 +262,7 @@
 					throw new InvalidArgumentException('The specified callback can not be executed.');
 				}
 
-				return call_user_func($callback, self::$instance);
+				return call_user_func($callback, self::$singleton);
 			}
 		}
 
@@ -338,7 +357,7 @@
 			$missingRequiredArguments = array();
 			foreach(self::$arguments as $Argument) {
 				if($Argument->isRequired() && in_array($Argument->getTitle(), $knownArguments) === false) {
-					$missingRequiredArguments[] = $Argument->getTitle();
+					$missingRequiredArguments[] = $Argument->getTitle(true);
 				}
 			}
 			return $missingRequiredArguments;

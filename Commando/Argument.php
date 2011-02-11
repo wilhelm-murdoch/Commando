@@ -265,6 +265,23 @@
 		}
 
 		/**
+		 * Returns all current values associated with the current argument.
+		 *
+		 * @param None
+		 * @author Daniel Wilhelm II Murdoch <wilhelm.murdoch@gmail.com>
+		 * @access Public
+		 * @return Array
+		 * @uses Commando_Argument_Value::getValue()
+		 */
+		public function getValues() {
+			$argumentValues = array();
+			foreach($this->values as $Value) {
+				$argumentValues[] = $Value->getValue();
+			}
+			return $argumentValues;
+		}
+
+		/**
 		 * If this class is accessed as a string, this method will return its command line representation.
 		 *
 		 * @param None
