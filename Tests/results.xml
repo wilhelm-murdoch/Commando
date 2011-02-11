@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="Commando" tests="0" assertions="0" failures="0" errors="0" time="0.000000">
+    <testsuite name="Commando_Argument_ValueTest" file="G:\git\Commando\Tests\Commando\Argument\Commando_Argument_ValueTest.php" fullPackage="Commando.Argument" tests="0" assertions="0" failures="0" errors="0" time="0.000000"/>
+    <testsuite name="Commando_ArgumentTest" file="G:\git\Commando\Tests\Commando\Commando_ArgumentTest.php" fullPackage="Commando" tests="0" assertions="0" failures="0" errors="0" time="0.000000"/>
+    <testsuite name="Commando_SubjectTest" file="G:\git\Commando\Tests\Commando\Commando_SubjectTest.php" fullPackage="Commando" tests="0" assertions="0" failures="0" errors="0" time="0.000000"/>
+  </testsuite>
+</testsuites>
