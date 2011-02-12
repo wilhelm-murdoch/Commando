@@ -1,12 +1,6 @@
 <?php
 
-	require_once 'Commando.php';
-	require_once 'Commando/Support.php';
-	require_once 'Commando/Subject.php';
-	require_once 'Commando/Argument.php';
-	require_once 'Commando/Argument/Value.php';
-	require_once 'Commando/Argument/Value/Single.php';
-	require_once 'Commando/Argument/Value/Multi.php';
+	require_once 'phpunit.php';
 
 	try {
 		if(Commando::isCli() === false) {
@@ -19,6 +13,11 @@
 				Commando_Argument_Value_Single::factory()
 			))
 		)
+		->addPrompts(array(
+			Commando_Prompt::factory('password', 'Enter your password: ', true)->addValidator(
+				Commando_Prompt_Validator_Confirm::factory()
+			)
+		))
 		->validate($argv)
 		->execute();
 	} catch(Exception $Exception) {

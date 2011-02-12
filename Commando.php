@@ -31,6 +31,14 @@
 		static private $arguments = array();
 
 		/**
+		 * Contains instances of class Commando_Prompt.
+		 * @access Private
+		 * @var Array
+		 * @static
+		 */
+		static private $prompts = array();
+
+		/**
 		 * Contains default settings for Commando. Can be overwritten when first calling Commando::singleton($config)
 		 * @access Private
 		 * @var Array
@@ -93,14 +101,11 @@
 		 * @access Public
 		 * @return Object Commando
 		 * @static
-		 * @uses Commando_Argument
 		 * @uses Commando::addArgument()
 		 */
 		static public function addArguments(array $argumentCollection) {
 			foreach($argumentCollection as $Argument) {
-				if($Argument instanceof Commando_Argument) {
-					self::addArgument($Argument);
-				}
+				self::addArgument($Argument);
 			}
 			return self::$singleton;
 		}
@@ -118,6 +123,40 @@
 		 */
 		static public function addArgument(Commando_Argument $Argument) {
 			self::$arguments[$Argument->getTitle()] = $Argument;
+			return self::$singleton;
+		}
+
+
+		/**
+		 * Adds a collection of class Commando_Prompt instances. Adding prompts allows the utility to
+		 * query the client for additional required information.
+		 *
+		 * @param Array $promptCollection A collection of Commando_Prompt instances.
+		 * @author Daniel Wilhelm II Murdoch <wilhelm.murdoch@gmail.com>
+		 * @access Public
+		 * @return Object Commando
+		 * @static
+		 * @uses Commando::addPrompt()
+		 */
+		static public function addPrompts(array $promptCollection) {
+			foreach($promptCollection as $Prompt) {
+				self::addPrompt($Prompt);
+			}
+			return self::$singleton;
+		}
+
+		/**
+		 * Adds a single instance of class Commando_Prompt.
+		 *
+		 * @param Class Commando_Prompt $Prompt A single Commando_Prompt instance.
+		 * @author Daniel Wilhelm II Murdoch <wilhelm.murdoch@gmail.com>
+		 * @access Public
+		 * @return Object Commando
+		 * @static
+		 * @uses Commando_Prompt
+		 */
+		static public function addPrompt(Commando_Prompt $Prompt) {
+			self::$prompts[$Prompt->getTitle()] = $Prompt;
 			return self::$singleton;
 		}
 
@@ -222,6 +261,23 @@
 		}
 
 		/**
+		 * This will return a response corresponding to the prompt title.
+		 *
+		 * @param String $promptTitle Title of the desired prompt.
+		 * @author Daniel Wilhelm II Murdoch <wilhelm.murdoch@gmail.com>
+		 * @access Public
+		 * @return Array
+		 * @throws InvalidArgumentException
+		 * @uses Commando_Prompt::getResponse()
+		 */
+		public function getPrompt($promptTitle) {
+			if(isset(self::$prompts[$promptTitle]) === false) {
+				throw new InvalidArgumentException("Prompt could not be found: {$promptTitle}");
+			}
+			return self::$prompts[$promptTitle]->getResponse();
+		}
+
+		/**
 		 * This will return all values associated with the specified argument title. First, it must ensure the desired
 		 * argument exists. If not, it will throw an exception. It will then iterate through a known argument's bound
 		 * values and return them as an array.
@@ -246,6 +302,10 @@
 		 * the current singleton instance of Commando. This can be used to affect the behavior of the resource associated
 		 * with the callback.
 		 *
+		 * This method also triggers all queued command prompts. They will be presented in the order they were assigned.
+		 * Once a response has been provided for each prompt, the object will then notify any attached observers to
+		 * interpret the command.
+		 *
 		 * Note: You must assign either arguments to this class or a callback to this method. Otherwise, there's really
 		 * no point in using this library. If both requirements are not met, this method will throw an exception. A very,
 		 * very sad exception.
@@ -261,6 +321,10 @@
 		static public function execute($callback = null) {
 			if(is_null($callback) && self::$arguments == false) {
 				throw new InvalidArgumentException('Nothing to do. Assign an argument or callback. :(');
+			}
+
+			foreach(self::$prompts as $Prompt) {
+				$Prompt->show();
 			}
 
 			foreach(self::$arguments as $Argument) {
