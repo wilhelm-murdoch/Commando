@@ -85,10 +85,30 @@
 		}
 
 		/**
-		 * Adds a single instance of class Commando_Argument or an array containing a collection of instances. These define
-		 * a list of supported command line arguments and associated behaviors.
+		 * Adds a collection of class Commando_Argument instances. These define a list of supported command
+		 * line arguments and associated behaviors.
 		 *
-		 * @param Array,Class Commando_Argument $arguments A single, or collection of, Commando_Argument instances.
+		 * @param Array $argumentCollection A collection of Commando_Argument instances.
+		 * @author Daniel Wilhelm II Murdoch <wilhelm.murdoch@gmail.com>
+		 * @access Public
+		 * @return Object Commando
+		 * @static
+		 * @uses Commando_Argument
+		 * @uses Commando::addArgument()
+		 */
+		static public function addArguments(array $argumentCollection) {
+			foreach($argumentCollection as $Argument) {
+				if($Argument instanceof Commando_Argument) {
+					self::addArgument($Argument);
+				}
+			}
+			return self::$singleton;
+		}
+
+		/**
+		 * Adds a single instance of class Commando_Argument.
+		 *
+		 * @param Class Commando_Argument $Argument A single Commando_Argument instance.
 		 * @author Daniel Wilhelm II Murdoch <wilhelm.murdoch@gmail.com>
 		 * @access Public
 		 * @return Object Commando
@@ -96,18 +116,8 @@
 		 * @uses Commando_Argument
 		 * @uses Commando_Argument::getTitle()
 		 */
-		static public function addArgument($arguments) {
-			if(is_array($arguments)) {
-				foreach($arguments as $Argument) {
-					if($Argument instanceof Commando_Argument) {
-						self::$arguments[$Argument->getTitle()] = $Argument;
-					}
-				}
-			} else {
-				if($arguments instanceof Commando_Argument) {
-					self::$arguments[$arguments->getTitle()] = $arguments;
-				}
-			}
+		static public function addArgument(Commando_Argument $Argument) {
+			self::$arguments[$Argument->getTitle()] = $Argument;
 			return self::$singleton;
 		}
 
