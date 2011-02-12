@@ -29,8 +29,9 @@
 		/**
 		 * Instantiates class and defines instance variables.
 		 *
-		 * @param Boolean $isRequired   Determines whether this is a required value
-		 * @param String  $valuePattern Used to validate specified values
+		 * @param Boolean $isRequired       Determines whether this is a required value
+		 * @param Null, Integer $valueLimit Determines the number of allowed values
+		 * @param String  $valuePattern     Used to validate specified values
 		 * @author Daniel Wilhelm II Murdoch <wilhelm.murdoch@gmail.com>
 		 * @access Public
 		 * @return Commando_Argument_Value
@@ -45,6 +46,7 @@
 		 * Factory pattern which returns a brand new instance of this class
 		 *
 		 * @param Boolean $isRequired   Determines whether this is a required value
+		 * @param Null, Integer $valueLimit Determines the number of allowed values
 		 * @param String  $valuePattern Used to validate specified values
 		 * @author Daniel Wilhelm II Murdoch <wilhelm.murdoch@gmail.com>
 		 * @access Public
