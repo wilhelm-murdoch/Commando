@@ -302,6 +302,9 @@
 		 * the current singleton instance of Commando. This can be used to affect the behavior of the resource associated
 		 * with the callback.
 		 *
+		 * In addition to a standard PHP callback, you may also pass lambda, or Closure instances, through as an alternative
+		 * callback method. Please be aware, using Closures is only supported in PHP 5.3.x.
+		 *
 		 * This method also triggers all queued command prompts. They will be presented in the order they were assigned.
 		 * Once a response has been provided for each prompt, the object will then notify any attached observers to
 		 * interpret the command.
@@ -310,7 +313,7 @@
 		 * no point in using this library. If both requirements are not met, this method will throw an exception. A very,
 		 * very sad exception.
 		 *
-		 * @param String, Array $callback A standard PHP callback.
+		 * @param String, Array, Closure $callback A standard PHP callback or Closure instance.
 		 * @author Daniel Wilhelm II Murdoch <wilhelm.murdoch@gmail.com>
 		 * @access Public
 		 * @return Mixed
@@ -332,7 +335,10 @@
 			}
 
 			if(is_null($callback) === false) {
-				if(is_callable($callback) === false) {
+				if($callback instanceof Closure) {
+					$Closure = new RefectionFunction($callback);
+					return $Closure->invokeArgs($this);
+				} elseif(is_callable($callback) === false) {
 					throw new InvalidArgumentException('The specified callback can not be executed.');
 				}
 
