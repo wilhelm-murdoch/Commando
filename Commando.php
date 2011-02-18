@@ -349,7 +349,7 @@
 		 * @return String
 		 * @static
 		 */
-		static public function  __toString() {
+		public function  __toString() {
 			return implode(' ', $_SERVER['argv']);
 		}
 

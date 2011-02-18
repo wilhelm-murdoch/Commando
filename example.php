@@ -21,5 +21,5 @@
 		->validate($argv)
 		->execute();
 	} catch(Exception $Exception) {
-		echo 'Error: '.$Exception->getMessage();
+		echo 'Error: '.$Exception->getMessage() . "\n";
 	}
