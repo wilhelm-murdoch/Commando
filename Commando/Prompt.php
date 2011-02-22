@@ -42,6 +42,13 @@
 		public function getError() {
 			return $this->error;
 		}
+		
+		public function setMessage($message) {
+			if(!is_string($message))
+				throw new Exception('Prompt must be a string.');
+				
+			$this->message = $message;
+		}
 
 		public function show() {
 			fwrite(STDOUT, $this->message);

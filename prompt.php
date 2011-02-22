@@ -23,7 +23,10 @@
 		$cmd = $commando->getPrompt('commando')->getResponse();
 		
 		if($cmd == 'exit')
-			Commando_PerpetualPrompt::$state = 0;
+			Commando_PerpetualPrompt::setState( Commando_PerpetualPrompt::STATUS_EXIT );
+			
+		if($cmd == 'prompt')
+			Commando_PerpetualPrompt::setPrompt( ' ~new prompt~ > ');
 			
 		print $commando->getPrompt('commando')->getResponse() . "\n";
 	}
