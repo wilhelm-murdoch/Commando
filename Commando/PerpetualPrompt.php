@@ -86,8 +86,7 @@
 		 * @return Void
 		 * @static
 		 */
-		static public function setPrompt($prompt)
-		{
+		static public function setPrompt($prompt) {
 			if(!is_string($prompt))
 				throw new Exception('Prompt must be a string.');
 				
@@ -102,8 +101,7 @@
 		 * @return Void
 		 * @static
 		 */
-		static protected function onStart()
-		{
+		static protected function onStart() {
 			print "Starting Prompt\n";
 		}
 		
@@ -115,8 +113,7 @@
 		 * @return Void
 		 * @static
 		 */
-		static protected function onExit()
-		{
+		static protected function onExit() {
 			print "Exiting Prompt\n";
 		}
 		
@@ -128,8 +125,7 @@
 		 * @return Integer
 		 * @static
 		 */
-		static public function getState()
-		{
+		static public function getState() {
 			return self::$state;
 		}
 		
@@ -142,10 +138,8 @@
 		 * @return Void
 		 * @static
 		 */
-		static public function setState($state)
-		{
-			if($state == self::STATUS_EXIT || $state == self::STATUS_ACTIVE || $state == self::STATUS_PROCESSING)
-			{
+		static public function setState($state) {
+			if($state == self::STATUS_EXIT || $state == self::STATUS_ACTIVE || $state == self::STATUS_PROCESSING) {
 				self::$state = $state;
 			}
 		}
