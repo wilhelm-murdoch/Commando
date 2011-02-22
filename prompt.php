@@ -4,10 +4,6 @@
 	// Written By Nick Shepherd <gene.shepherd@gmail.com>
 
 	require_once 'phpunit.php';
-	
-	global $state;
-	
-	$state = true;
 
 	try {
 		
@@ -15,26 +11,19 @@
 			throw new Exception('this utility may only be accessed from the command line.');
 		}
 
-		while($state) {
-			
-			Commando::singleton()->addPrompts(array(
-				Commando_Prompt::factory('commando', 'commando > ', true)
-			))
-			->execute('executeCommand');
-			
-		}
+		$prompt = Commando_PerpetualPrompt::factory('commando', 'commando > ', 'processInput');
+		
 		
 	} catch(Exception $Exception) {
 		echo 'Error: '.$Exception->getMessage() . "\n";
 	}
 	
-	
-	function executeCommand($commando)
+	function processInput($commando)
 	{
-		global $state;
+		$cmd = $commando->getPrompt('commando')->getResponse();
 		
-		if($commando->getPrompt('commando') == 'exit')
-			$state = false;
-		
-		print $commando->getPrompt('commando') . "\n";
+		if($cmd == 'exit')
+			Commando_PerpetualPrompt::$state = 0;
+			
+		print $commando->getPrompt('commando')->getResponse() . "\n";
 	}

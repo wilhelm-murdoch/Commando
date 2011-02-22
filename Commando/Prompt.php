@@ -1,11 +1,12 @@
 <?php
 	class Commando_Prompt extends Commando_Subject {
-		private $Validator;
+ 		private $Validator;
 		private $id;
 		private $message;
 		private $isRequired;
 		private $error;
 		private $response;
+		
 		public function  __construct($id, $message, $isRequired = false, $error = "Error: value required!\n") {
 			parent::__construct();
 			$this->Validator  = null;

@@ -156,7 +156,7 @@
 		 * @uses Commando_Prompt
 		 */
 		static public function addPrompt(Commando_Prompt $Prompt) {
-			self::$prompts[$Prompt->getTitle()] = $Prompt;
+			self::$prompts[$Prompt->getId()] = $Prompt;
 			return self::$singleton;
 		}
 
@@ -274,7 +274,7 @@
 			if(isset(self::$prompts[$promptTitle]) === false) {
 				throw new InvalidArgumentException("Prompt could not be found: {$promptTitle}");
 			}
-			return self::$prompts[$promptTitle]->getResponse();
+			return self::$prompts[$promptTitle];
 		}
 
 		/**
