@@ -11,7 +11,7 @@
 			throw new Exception('this utility may only be accessed from the command line.');
 		}
 
-		$prompt = Commando_PerpetualPrompt::factory('commando', 'commando > ', 'processInput');
+		Commando_PerpetualPrompt::execute('commando', 'commando > ', 'processInput');
 		
 		
 	} catch(Exception $Exception) {

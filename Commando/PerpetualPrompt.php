@@ -4,8 +4,8 @@
 		/**
 		 * Prompt Status Constants
 		 * @access Public
-		 * @var Constant
-		 * @static
+		 * @var Integer
+		 * @constant
 		 */
 		const STATUS_EXIT = 0;
 		const STATUS_ACTIVE = 1;
@@ -49,7 +49,7 @@
 		 * @return Void
 		 * @static
 		 */
-		static public function factory($id, $prompt, $callback) {
+		static public function execute($id, $prompt, $callback) {
 			
 			// On Start Method called to build anything needed to prepare the Perpetual Prompt
 			self::onStart();
